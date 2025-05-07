@@ -1,6 +1,7 @@
 
 import streamlit as st
 import pandas as pd
+from fpdf import FPDF
 
 st.set_page_config(page_title="Formulário de Seleção", layout="centered")
 
@@ -45,6 +46,8 @@ st.markdown("---")
 
 # Classificação das subáreas
 st.subheader("Classifique as subáreas por ordem de preferência")
+subarea_df = pd.DataFrame()
+
 if "Linha 1" in linha:
     selected_order = [st.number_input(sub, min_value=1, max_value=5, step=1, key=sub) for sub in subareas_l1]
     subarea_df = pd.DataFrame({"Subárea": subareas_l1, "Ordem de preferência": selected_order})
@@ -52,14 +55,49 @@ elif "Linha 2" in linha:
     selected_order = [st.number_input(sub, min_value=1, max_value=13, step=1, key=sub) for sub in subareas_l2]
     subarea_df = pd.DataFrame({"Subárea": subareas_l2, "Ordem de preferência": selected_order})
 
+# Classe para gerar PDF
+class FormularioPDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "Relatório de Escolha de Linha de Pesquisa", ln=True, align="C")
+        self.ln(10)
+
+    def add_info(self, nome, linha, subarea_df):
+        self.set_font("Arial", "", 12)
+        self.cell(0, 10, f"Nome: {nome}", ln=True)
+        self.cell(0, 10, f"Linha de Pesquisa Selecionada: {linha}", ln=True)
+        self.ln(5)
+        self.set_font("Arial", "B", 12)
+        self.cell(0, 10, "Subáreas por ordem de preferência:", ln=True)
+        self.set_font("Arial", "", 12)
+        subarea_df_sorted = subarea_df.sort_values(by="Ordem de preferência")
+        for idx, row in subarea_df_sorted.iterrows():
+            self.multi_cell(0, 8, f"{row['Ordem de preferência']}. {row['Subárea']}")
+        self.ln(5)
+
 # Botão de envio
 if st.button("Enviar"):
     if not nome.strip():
         st.warning("Por favor, preencha o nome.")
+    elif subarea_df["Ordem de preferência"].duplicated().any():
+        st.error("Cada subárea deve ter uma ordem de preferência única. Verifique os valores duplicados.")
     else:
         subarea_df.insert(0, "Linha de Pesquisa", linha)
         subarea_df.insert(0, "Nome", nome.strip())
         st.success("Respostas registradas com sucesso!")
         st.dataframe(subarea_df)
+
+        # Gerar CSV
         csv = subarea_df.to_csv(index=False).encode('utf-8')
         st.download_button("Baixar respostas em CSV", csv, file_name=f"resposta_{nome.replace(' ', '_')}.csv")
+
+        # Gerar PDF
+        pdf = FormularioPDF()
+        pdf.add_page()
+        pdf.add_info(nome.strip(), linha, subarea_df)
+        pdf_path = f"resposta_{nome.replace(' ', '_')}.pdf"
+        pdf.output(pdf_path)
+
+        with open(pdf_path, "rb") as f:
+            st.download_button("Baixar relatório em PDF", f.read(), file_name=pdf_path, mime="application/pdf")
+
