@@ -1,7 +1,7 @@
-
 import streamlit as st
 import pandas as pd
-from fpdf import FPDF
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
 
 st.set_page_config(page_title="Formulário de Seleção", layout="centered")
 
@@ -55,25 +55,29 @@ elif "Linha 2" in linha:
     selected_order = [st.number_input(sub, min_value=1, max_value=13, step=1, key=sub) for sub in subareas_l2]
     subarea_df = pd.DataFrame({"Subárea": subareas_l2, "Ordem de preferência": selected_order})
 
-# Classe para gerar PDF
-class FormularioPDF(FPDF):
-    def header(self):
-        self.set_font("Arial", "B", 14)
-        self.cell(0, 10, "Relatório de Escolha de Linha de Pesquisa", ln=True, align="C")
-        self.ln(10)
+# Função para gerar PDF com reportlab
+def gerar_pdf(nome, linha, subarea_df):
+    caminho_pdf = f"resposta_{nome.replace(' ', '_')}.pdf"
+    c = canvas.Canvas(caminho_pdf, pagesize=A4)
+    width, height = A4
+    c.setFont("Helvetica-Bold", 14)
+    c.drawCentredString(width / 2, height - 50, "Relatório de Escolha de Linha de Pesquisa")
+    c.setFont("Helvetica", 12)
+    c.drawString(50, height - 100, f"Nome: {nome}")
+    c.drawString(50, height - 120, f"Linha de Pesquisa Selecionada: {linha}")
+    c.drawString(50, height - 150, "Subáreas por ordem de preferência:")
 
-    def add_info(self, nome, linha, subarea_df):
-        self.set_font("Arial", "", 12)
-        self.cell(0, 10, f"Nome: {nome}", ln=True)
-        self.cell(0, 10, f"Linha de Pesquisa Selecionada: {linha}", ln=True)
-        self.ln(5)
-        self.set_font("Arial", "B", 12)
-        self.cell(0, 10, "Subáreas por ordem de preferência:", ln=True)
-        self.set_font("Arial", "", 12)
-        subarea_df_sorted = subarea_df.sort_values(by="Ordem de preferência")
-        for idx, row in subarea_df_sorted.iterrows():
-            self.multi_cell(0, 8, f"{row['Ordem de preferência']}. {row['Subárea']}")
-        self.ln(5)
+    y = height - 170
+    subarea_df_sorted = subarea_df.sort_values(by="Ordem de preferência")
+    for idx, row in subarea_df_sorted.iterrows():
+        texto = f"{row['Ordem de preferência']}. {row['Subárea']}"
+        c.drawString(60, y, texto)
+        y -= 20
+        if y < 50:
+            c.showPage()
+            y = height - 50
+    c.save()
+    return caminho_pdf
 
 # Botão de envio
 if st.button("Enviar"):
@@ -91,13 +95,7 @@ if st.button("Enviar"):
         csv = subarea_df.to_csv(index=False).encode('utf-8')
         st.download_button("Baixar respostas em CSV", csv, file_name=f"resposta_{nome.replace(' ', '_')}.csv")
 
-        # Gerar PDF
-        pdf = FormularioPDF()
-        pdf.add_page()
-        pdf.add_info(nome.strip(), linha, subarea_df)
-        pdf_path = f"resposta_{nome.replace(' ', '_')}.pdf"
-        pdf.output(pdf_path)
-
+        # Gerar PDF com reportlab
+        pdf_path = gerar_pdf(nome.strip(), linha, subarea_df)
         with open(pdf_path, "rb") as f:
             st.download_button("Baixar relatório em PDF", f.read(), file_name=pdf_path, mime="application/pdf")
-
