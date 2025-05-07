@@ -18,27 +18,27 @@ linha = st.radio("Selecione apenas 1 (uma) linha de pesquisa:", [
 
 # Subáreas por linha
 subareas_l1 = [
-    "a) Sensoriamento Remoto de Sistemas Agrícolas",
-    "b) Mapeamento móvel e ARP na Fitotecnia",
-    "c) Sistemas computacionais inteligentes",
-    "d) GNSS, modelagem, controle de qualidade",
-    "e) Sensores na Agricultura de Precisão"
+    "Sensoriamento Remoto de Sistemas Agrícolas",
+    "Desenvolvimento de sistemas de mapeamento móvel; Utilização de aeronaves remotamente pilotadas na Fitotecnia",
+    "Sistemas computacionais inteligentes na agricultura e informações geoespaciais",
+    "Posicionamento por GNSS; Modelagem e análise de dados geoespaciais; Controle de qualidade de informações geoespaciais",
+    "Sensores Aplicados a Agricultura de Precisão"
 ]
 
 subareas_l2 = [
-    "a) Biotecnologia na agricultura",
-    "b) Recursos florestais",
-    "c) Hortaliças e plantas medicinais",
-    "d) Patologia florestal e sensoriamento",
-    "e) Nutrição mineral e metabolismo",
-    "f) Manejo de plantas daninhas e herbicidas",
-    "g) Microbiologia agrícola",
-    "h) Controle biológico e sensoriamento",
-    "i) Mecanização e aplicação de precisão",
-    "j) Manejo da água em sistemas irrigados",
-    "k) Melhoramento e fenotipagem de hortaliças",
-    "l) Entomologia agrícola",
-    "m) Tecnologias na cafeicultura"
+    "Biotecnologia na agricultura",
+    "Recursos florestais",
+    "Nutrição, manejo e cultura de tecidos em hortaliças e plantas medicinais",
+    "Micologia Aplicada; Patologia Florestal; Patologia de Sementes; Sensoriamento remoto aplicado à Patologia Florestal",
+    "Nutrição mineral e metabolismo de plantas",
+    "Manejo integrado de plantas daninhas. Uso de herbicidas na Agricultura. Sistemas de informação para controle de plantas",
+    "Microbiologia agrícola",
+    "Controle biológico de doenças de plantas; Controle biológico de plantas daninhas; Sensoriamento remoto aplicado à Fitopatologia",
+    "Mecanização agrícola; Tecnologia de aplicação de precisão",
+    "Manejo da água em sistemas agrícolas irrigados",
+    "Melhoramento genético de hortaliças e fenotipagem de alto desempenho",
+    "Entomologia agrícola: manejo integrado, controle biológico, controle microbiano",
+    "Tecnologias aplicadas à cafeicultura"
 ]
 
 st.markdown("---")
