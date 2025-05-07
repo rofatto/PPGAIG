@@ -9,6 +9,6 @@ Este aplicativo Streamlit permite que candidatos escolham uma linha de pesquisa 
 2. Escolha uma linha de pesquisa.
 3. Classifique as subáreas da linha escolhida com números (1 = maior interesse).
 4. Clique em **Enviar**.
-5. Baixe o arquivo `.csv` com suas respostas.
+5. Baixe o arquivo `.pdf` com suas respostas.
 
 Desenvolvido para processos seletivos acadêmicos com foco em áreas geoespaciais e agronômicas.
