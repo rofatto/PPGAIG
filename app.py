@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 
 st.set_page_config(page_title="Formulário de Seleção", layout="centered")
 
@@ -29,7 +32,7 @@ subareas_l1 = [
 subareas_l2 = [
     "Biotecnologia na agricultura",
     "Recursos florestais",
-    "Nutrição. Manejo e cultura de tecidos em hortaliças e plantas medicinais",
+    "Nutrição, Manejo e cultura de tecidos em hortaliças e plantas medicinais",
     "Micologia Aplicada. Patologia Florestal. Patologia de Sementes. Sensoriamento remoto aplicado à Patologia Florestal",
     "Nutrição mineral e metabolismo de plantas",
     "Manejo integrado de plantas daninhas. Uso de herbicidas na Agricultura. Sistemas de informação para controle de plantas",
@@ -38,7 +41,7 @@ subareas_l2 = [
     "Mecanização agrícola. Tecnologia de aplicação de precisão",
     "Manejo da água em sistemas agrícolas irrigados",
     "Melhoramento genético de hortaliças e fenotipagem de alto desempenho",
-    "Entomologia agrícola: manejo integrado. controle biológico. controle microbiano",
+    "Entomologia agrícola: manejo integrado, controle biológico, controle microbiano",
     "Tecnologias aplicadas à cafeicultura"
 ]
 
@@ -55,29 +58,31 @@ elif "Linha 2" in linha:
     selected_order = [st.number_input(sub, min_value=1, max_value=13, step=1, key=sub) for sub in subareas_l2]
     subarea_df = pd.DataFrame({"Subárea": subareas_l2, "Ordem de preferência": selected_order})
 
-# Função para gerar PDF com reportlab
+# Função para gerar PDF com quebras de linha automáticas
 def gerar_pdf(nome, linha, subarea_df):
-    caminho_pdf = f"resposta_{nome.replace(' ', '_')}.pdf"
-    c = canvas.Canvas(caminho_pdf, pagesize=A4)
-    width, height = A4
-    c.setFont("Helvetica-Bold", 14)
-    c.drawCentredString(width / 2, height - 50, "Relatório de Escolha de Linha de Pesquisa")
-    c.setFont("Helvetica", 12)
-    c.drawString(50, height - 100, f"Nome: {nome}")
-    c.drawString(50, height - 120, f"Linha de Pesquisa Selecionada: {linha}")
-    c.drawString(50, height - 150, "Subáreas por ordem de preferência:")
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
 
-    y = height - 170
+    pdf_path = f"resposta_{nome.replace(' ', '_')}.pdf"
+    doc = SimpleDocTemplate(pdf_path, pagesize=A4, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
+    styles = getSampleStyleSheet()
+    elements = []
+
+    elements.append(Paragraph("Relatório de Escolha de Linha de Pesquisa", styles['Title']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"<b>Nome:</b> {nome}", styles['Normal']))
+    elements.append(Paragraph(f"<b>Linha de Pesquisa Selecionada:</b> {linha}", styles['Normal']))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph("<b>Subáreas por ordem de preferência:</b>", styles['Heading4']))
+
     subarea_df_sorted = subarea_df.sort_values(by="Ordem de preferência")
     for idx, row in subarea_df_sorted.iterrows():
-        texto = f"{row['Ordem de preferência']}. {row['Subárea']}"
-        c.drawString(60, y, texto)
-        y -= 20
-        if y < 50:
-            c.showPage()
-            y = height - 50
-    c.save()
-    return caminho_pdf
+        texto = f"{int(row['Ordem de preferência'])}. {row['Subárea']}"
+        elements.append(Paragraph(texto, styles['Normal']))
+        elements.append(Spacer(1, 6))
+
+    doc.build(elements)
+    return pdf_path
 
 # Botão de envio
 if st.button("Enviar"):
@@ -91,11 +96,7 @@ if st.button("Enviar"):
         st.success("Respostas registradas com sucesso!")
         st.dataframe(subarea_df)
 
-        # Gerar CSV
-        csv = subarea_df.to_csv(index=False).encode('utf-8')
-        st.download_button("Baixar respostas em CSV", csv, file_name=f"resposta_{nome.replace(' ', '_')}.csv")
-
-        # Gerar PDF com reportlab
+        # Gerar PDF
         pdf_path = gerar_pdf(nome.strip(), linha, subarea_df)
         with open(pdf_path, "rb") as f:
             st.download_button("Baixar relatório em PDF", f.read(), file_name=pdf_path, mime="application/pdf")
