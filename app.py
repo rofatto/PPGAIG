@@ -62,8 +62,8 @@ elif "Linha 2" in linha:
 
 # Função para gerar PDF
 def gerar_pdf(nome, email, cpf, data_nascimento, ano_conclusao, linha, subarea_df):
-    pdf_path = f"resposta_{nome.replace(' ', '_')}.pdf"
-    doc = SimpleDocTemplate(pdf_path, pagesize=A4, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
+    nome_arquivo = "formulario_selecao_linha_pesquisa_subarea.pdf"
+    doc = SimpleDocTemplate(nome_arquivo, pagesize=A4, rightMargin=50, leftMargin=50, topMargin=50, bottomMargin=50)
     styles = getSampleStyleSheet()
     elements = []
 
@@ -85,7 +85,7 @@ def gerar_pdf(nome, email, cpf, data_nascimento, ano_conclusao, linha, subarea_d
         elements.append(Spacer(1, 6))
 
     doc.build(elements)
-    return pdf_path
+    return nome_arquivo
 
 # Botão de envio
 if st.button("Enviar"):
